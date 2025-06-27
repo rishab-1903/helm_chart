@@ -1,0 +1,48 @@
+frontend:
+  image:
+    repository: gcr.io/rishab-gupta-cwx-internal/product-frontend
+    # repository: nginx
+    tag: "without_reverse_proxy_2"
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+  ingress:
+    enabled: true
+    host: ""
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  nodeSelector: {}
+
+backend:
+  replicaCount: 2
+
+  image:
+    repository: gcr.io/rishab-gupta-cwx-internal/product-backend
+    tag: "without_reverse_proxy_3"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 5000
+    targetPort: 5000
+
+  env:
+    DB_USER: "postgres"
+    DB_PASSWORD: "rishab1903"
+    DB_HOST: "34.123.85.96"
+    DB_PORT: "5432"
+    DB_NAME: "postgres"
+    API_TOKEN: "mysecrettoken123"
