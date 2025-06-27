@@ -1,93 +1,171 @@
-# Product App Deployment with Helm on GKE
+# 🛠️ Helm Deployment for 3-Tier Web App on GKE with static frontend & flask app backend code.
 
-This project deploys a simple product listing application with:
+This repository contains a Helm chart to deploy a simple **3-tier application** on **Google Kubernetes Engine (GKE)**. It includes:
 
-- A static HTML/JS frontend
-- A Flask backend (with PostgreSQL)
-- Kubernetes-native services (`ClusterIP`)
-- Routing via Google Cloud Ingress
-
----
-
-## Folder Structure
-
-
-<pre> ``` helm_chart/ ├── backend/ │ ├── venv/ │ ├── .gitignore │ ├── app.py │ ├── Dockerfile │ ├── requirements.txt ├── frontend/ │ ├── Dockerfile │ ├── index.html ├── templates/ │ ├── backend-config.yaml │ ├── backend-deployment.yaml │ ├── backend-service.yaml │ ├── frontend-deployment.yaml │ ├── frontend-ingress.yaml │ ├── frontend-service.yaml ├── Chart.yaml ├── values.yaml ├── README.md ``` </pre>
-
+* 📦 **Flask Backend API** (`/health`, `/api/products`)
+* 🌐 **Static HTML Frontend** using Bootstrap
+* ☁️ **Cloud SQL (PostgreSQL)** – manually created with public IP
+* 🌍 **Ingress** for unified access - in /templates/frontend-ingress.yaml
 
 ---
 
-## Prerequisites
-
-- A GKE cluster with Ingress enabled
-- Docker images for both frontend and backend pushed to a container registry (e.g., GCR)
-- Helm installed and configured
-
----
-
-## Sample values.yaml
+## 📁 Folder Structure
 
 '''
-frontend:
-  image:
-    repository: gcr.io/YOUR_PROJECT/frontend
-    tag: latest
+helm\_chart/
+├── backend/
+│   ├── .gitignore
+│   ├── Dockerfile
+│   ├── app.py
+│   └── requirements.txt
+├── frontend/
+│   ├── Dockerfile
+│   └── index.html
+├── templates/
+│   ├── backend-config.yaml
+│   ├── backend-deployment.yaml
+│   ├── backend-service.yaml
+│   ├── frontend-deployment.yaml
+│   ├── frontend-ingress.yaml
+│   └── frontend-service.yaml
+├── Chart.yaml
+├── values.yaml
+└── README.md
+'''
 
-  service:
-    type: ClusterIP
-    port: 80
-    targetPort: 80
+---
 
-  ingress:
-    enabled: true
+## ⚙️ Prerequisites
 
+* Google Cloud SDK (`gcloud`)
+* Kubernetes CLI (`kubectl`)
+* Helm
+* A Google Cloud project with:
+
+  * GKE enabled
+  * A **Cloud SQL PostgreSQL instance** created manually
+  * Docker images for frontend and backend pushed to **GCR**
+
+---
+
+## 🚀 Create and Configure GKE Cluster
+
+'''
+gcloud auth login
+gcloud config set project YOUR\_PROJECT\_ID
+
+# Create cluster
+
+gcloud container clusters create my-cluster&#x20;
+\--zone us-central1-a&#x20;
+\--num-nodes 2
+
+# Get credentials for kubectl
+
+gcloud container clusters get-credentials my-cluster --zone us-central1-a
+'''
+
+---
+
+## 🧾 Configure `values.yaml`
+
+Set environment variables and image tags:
+
+'''
 backend:
-  image:
-    repository: gcr.io/YOUR_PROJECT/backend
-    tag: latest
+image: gcr.io/YOUR\_PROJECT\_ID/backend-image\:latest
+env:
+DB\_HOST: "CLOUD\_SQL\_PUBLIC\_IP"
+DB\_NAME: "your\_database"
+DB\_USER: "your\_user"
+DB\_PASSWORD: "your\_password"
 
-  service:
-    type: ClusterIP
-    port: 5000
-    targetPort: 5000
+frontend:
+image: gcr.io/YOUR\_PROJECT\_ID/frontend-image\:latest
+
+ingress:
+enabled: true
+hostname: ""  # Leave blank to use external IP
 '''
 
 ---
 
-## Deployment
-
-1. Install the Helm chart:
+## 📦 Deploy with Helm
 
 '''
-helm upgrade --install product-app ./product-frontend
+
+# Go to the chart directory
+
+cd helm\_chart/
+
+# Install the Helm chart
+
+helm upgrade --install my-app . --namespace default
 '''
 
-2. Check the Ingress IP:
+Check resource status:
+
+'''
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+'''
+
+---
+
+## 🌐 Access the App
+
+Once the Ingress is ready:
 
 '''
 kubectl get ingress
 '''
 
-3. Access the app in your browser using the Ingress IP.
+Use the **EXTERNAL-IP** to access:
+
+* Frontend: `http://<INGRESS_IP>`
+* Backend Health Check: `http://<INGRESS_IP>/health`
+* Product API: `http://<INGRESS_IP>/api/products`
 
 ---
 
-## Ingress Routing
+## 🧪 Example API Calls
 
-The Ingress is configured to route:
+'''
+curl http\://\<INGRESS\_IP>/health
 
-- `/` to the frontend service
-- `/api` to the backend service
-- `/health` to the backend service
-
-Ingress uses `spec.ingressClassName: gce`.
+curl http\://\<INGRESS\_IP>/api/products
+'''
 
 ---
 
-## Notes
+## 🧹 Clean Up
 
-- Both services use `ClusterIP` and are only exposed through Ingress.
-- The frontend should use relative paths like `/api/products` for API access.
-- The backend should have a working `/health` route on port 5000.
+'''
+helm uninstall my-app
+
+gcloud container clusters delete my-cluster --zone us-central1-a
+'''
 
 ---
+
+## 📌 Notes
+
+* This is a basic public-IP setup for Cloud SQL. **Use private IP + Cloud SQL Proxy for production.**
+* You can extend the `frontend-ingress.yaml` with host-based rules or TLS configuration.
+
+---
+
+## 🙋‍♂️ Maintainer
+
+Created by [@rishab-1903](https://github.com/rishab-1903) – feel free to raise issues or contribute.
+'''
+
+Let me know if you'd like:
+
+* Diagram/architecture illustration
+* GitHub Action for image builds
+* TLS support via HTTPS
+* Sample Docker build & push commands
+
+All are quick additions!
