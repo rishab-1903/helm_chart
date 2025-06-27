@@ -12,17 +12,7 @@ This project deploys a simple product listing application with:
 ## Folder Structure
 
 
-rishab1903@rishab1903-NUC11PAHi5:~/helm_chart$ tree
-.
-├── Chart.yaml
-├── templates
-│   ├── backend-config.yaml
-│   ├── backend-deployment.yaml
-│   ├── backend-service.yaml
-│   ├── frontend-deployment.yaml
-│   ├── frontend-ingress.yaml
-│   └── frontend-service.yaml
-└── values.yaml
+<pre> ``` helm_chart/ ├── backend/ │ ├── venv/ │ ├── .gitignore │ ├── app.py │ ├── Dockerfile │ ├── requirements.txt ├── frontend/ │ ├── Dockerfile │ ├── index.html ├── templates/ │ ├── backend-config.yaml │ ├── backend-deployment.yaml │ ├── backend-service.yaml │ ├── frontend-deployment.yaml │ ├── frontend-ingress.yaml │ ├── frontend-service.yaml ├── Chart.yaml ├── values.yaml ├── README.md ``` </pre>
 
 
 ---
